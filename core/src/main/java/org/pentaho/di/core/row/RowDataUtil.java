@@ -22,6 +22,11 @@
 
 package org.pentaho.di.core.row;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * This class of static methods can be used to manipulate rows: add, delete, resize, etc... That way, when we want to go
  * for a metadata driven system with hiding deletes, over sized arrays etc, we can change these methods to find
@@ -123,6 +128,31 @@ public class RowDataUtil {
     }
 
     return newObjects;
+  }
+
+  // TODO(RW) - should we be throwing an exception if the values in the columns being merged are different? Currently as we merge we just overwrite the
+  // value with the value from the last row.
+  public static Object[] createCustomResizedCopy(Object[][] objects, List<ValueMetaInterface> outputMetaList, RowMetaInterface[] inputRowMetas) {
+    Object[] newObjects = allocateRowData( outputMetaList.size() );
+    Map<String,Integer> valueMetaMap = getValueMetaMap(outputMetaList);
+    for(int i =0; i < inputRowMetas.length; i++) {
+      int counter = 0;
+      for(ValueMetaInterface vmi : inputRowMetas[i].getValueMetaList()) {
+        String columnName = vmi.getName();
+        Integer outputIndex = valueMetaMap.get(columnName);
+        newObjects[outputIndex] = objects[i][counter];
+        counter++;
+      }
+    }
+    return newObjects;
+  }
+
+  private static Map<String,Integer> getValueMetaMap(List<ValueMetaInterface> vmiList) {
+    Map<String,Integer> valueMap = new HashMap<String,Integer>();
+    for(ValueMetaInterface vmi: vmiList) {
+      valueMap.put(vmi.getName(),vmiList.indexOf(vmi));
+    }
+    return valueMap;
   }
 
   /**
