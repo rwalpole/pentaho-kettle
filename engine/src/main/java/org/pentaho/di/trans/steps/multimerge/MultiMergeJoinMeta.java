@@ -33,6 +33,7 @@ import org.pentaho.di.core.exception.KettleXMLException;
 import org.pentaho.di.core.injection.Injection;
 import org.pentaho.di.core.injection.InjectionSupported;
 import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.i18n.BaseMessages;
@@ -64,6 +65,7 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
 
   public static final String[] join_types = { "INNER", "FULL OUTER" };
   public static final boolean[] optionals = { false, true };
+  private boolean duplicateFieldsAllowed;
 
   @Injection( name = "JOIN_TYPE" )
   private String joinType;
@@ -107,7 +109,7 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
   }
 
   /**
-   * @param keyFields1
+   * @param keyFields
    *          The keyFields1 to set.
    */
   public void setKeyFields( String[] keyFields ) {
@@ -119,8 +121,11 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
     return true;
   }
 
+  public boolean isDuplicateFieldsAllowed() { return duplicateFieldsAllowed; }
+
   public MultiMergeJoinMeta() {
     super(); // allocate BaseStepMeta
+    duplicateFieldsAllowed = false;
   }
 
   @Override
@@ -141,6 +146,7 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
     retval.allocateInputSteps( nrSteps );
     System.arraycopy( keyFields, 0, retval.keyFields, 0, nrKeys );
     System.arraycopy( inputSteps, 0, retval.inputSteps, 0, nrSteps );
+    retval.duplicateFieldsAllowed = duplicateFieldsAllowed;
     return retval;
   }
 
@@ -298,11 +304,15 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
     // We don't have any input fields here in "r" as they are all info fields.
     // So we just merge in the info fields.
     //
-    if ( info != null ) {
-      for ( int i = 0; i < info.length; i++ ) {
-        if ( info[i] != null ) {
-          r.mergeRowMeta( info[i] );
+    if (info != null) {
+      if(duplicateFieldsAllowed) {
+        for (int i = 0; i < info.length; i++) {
+          if (info[i] != null) {
+            r.mergeRowMeta(info[i]);
+          }
         }
+      } else {
+        mergeRowMetaNoDuplicates(r, info);
       }
     }
 
@@ -310,6 +320,21 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
       r.getValueMeta( i ).setOrigin( name );
     }
     return;
+  }
+
+  private void mergeRowMetaNoDuplicates(RowMetaInterface r, RowMetaInterface[] info) {
+    for ( int i = 0; i < info.length; i++ ) {
+      if (info[i] != null) {
+        final RowMetaInterface rmi = info[i];
+        for (int y = 0; y < rmi.size(); y++) {
+          final ValueMetaInterface vmi = rmi.getValueMeta(y);
+          final String name = vmi.getName();
+          if (r.indexOfValue(name) == -1) {
+            r.addValueMeta(vmi);
+          }
+        }
+      }
+    }
   }
 
   @Override
