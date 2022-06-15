@@ -69,6 +69,7 @@ import org.pentaho.di.ui.core.gui.GUIResource;
 import org.pentaho.di.ui.core.widget.ColumnInfo;
 import org.pentaho.di.ui.core.widget.TableView;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
+import org.pentaho.di.ui.trans.step.ComponentSelectionListener;
 
 public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogInterface {
   private static Class<?> PKG = MultiMergeJoinMeta.class; // for i18n purposes, needed by Translator2!!
@@ -77,6 +78,12 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
 
   private CCombo[] wInputStepArray;
   private CCombo joinTypeCombo;
+
+  private Label wlRemoveDuplicates;
+
+  private Button wRemoveDuplicates;
+  private FormData fdlRemoveDuplicates, fdRemoveDuplicates;
+
   private Text[] keyValTextBox;
 
   private Map<String, Integer> inputFields;
@@ -171,6 +178,8 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
     // create widgets for Join type
     createJoinTypeWidget( lsMod );
 
+    createRemoveDuplicatesWidget();
+
     // Some buttons
     wOK = new Button( shell, SWT.PUSH );
     wOK.setText( BaseMessages.getString( PKG, "System.Button.OK" ) );
@@ -256,6 +265,30 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
     fdType.left = new FormAttachment( 15, 0 );
     fdType.right = new FormAttachment( 35, 0 );
     joinTypeCombo.setLayoutData( fdType );
+  }
+
+  private void createRemoveDuplicatesWidget() {
+
+    wlRemoveDuplicates = new Label( shell, SWT.LEFT );
+    wlRemoveDuplicates.setText( BaseMessages.getString( PKG, "MultiMergeJoinDialog.RemoveDuplicates.Label" ) );
+    props.setLook( wlRemoveDuplicates );
+
+    fdlRemoveDuplicates = new FormData();
+    fdlRemoveDuplicates.left = new FormAttachment( 0, 0);
+    fdlRemoveDuplicates.top = new FormAttachment( joinTypeCombo, 20);
+    wlRemoveDuplicates.setLayoutData( fdlRemoveDuplicates );
+
+    wRemoveDuplicates = new Button( shell, SWT.CHECK );
+    wRemoveDuplicates.setToolTipText( BaseMessages.getString( PKG, "MultiMergeJoinDialog.RemoveDuplicates.Tooltip" ) );
+    props.setLook( wRemoveDuplicates );
+
+    fdRemoveDuplicates = new FormData();
+    fdRemoveDuplicates.top = new FormAttachment( joinTypeCombo, 20 );
+    fdRemoveDuplicates.left = new FormAttachment( wlRemoveDuplicates, margin );
+
+    wRemoveDuplicates.setLayoutData( fdRemoveDuplicates );
+    wRemoveDuplicates.addSelectionListener( new ComponentSelectionListener( joinMeta ) );
+
   }
 
   /**
