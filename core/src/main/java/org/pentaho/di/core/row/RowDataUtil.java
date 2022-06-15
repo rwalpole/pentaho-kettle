@@ -130,8 +130,8 @@ public class RowDataUtil {
     return newObjects;
   }
 
-  // TODO(RW) - should we be throwing an exception if the values in the columns being merged are different? Currently as we merge we just overwrite the
-  // value with the value from the last row.
+  // TODO(RW) - should we be throwing an exception if the values in the columns being merged are different?
+  //  Currently as we merge we just overwrite the value provided it is not null
   public static Object[] createCustomResizedCopy(Object[][] objects, List<ValueMetaInterface> outputMetaList, RowMetaInterface[] inputRowMetas) {
     Object[] newObjects = allocateRowData( outputMetaList.size() );
     Map<String,Integer> valueMetaMap = getValueMetaMap(outputMetaList);
@@ -140,7 +140,9 @@ public class RowDataUtil {
       for(ValueMetaInterface vmi : inputRowMetas[i].getValueMetaList()) {
         String columnName = vmi.getName();
         Integer outputIndex = valueMetaMap.get(columnName);
-        newObjects[outputIndex] = objects[i][counter];
+        if(objects[i][counter] != null) {
+          newObjects[outputIndex] = objects[i][counter];
+        }
         counter++;
       }
     }
