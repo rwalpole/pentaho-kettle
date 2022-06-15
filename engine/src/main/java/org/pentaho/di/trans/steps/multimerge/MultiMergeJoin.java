@@ -30,7 +30,6 @@ import org.pentaho.di.core.RowSet;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.row.RowDataUtil;
-import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.i18n.BaseMessages;
@@ -134,7 +133,7 @@ public class MultiMergeJoin extends BaseStep implements StepInterface {
     data.dummy = new Object[streamSize][];
 
     RowMetaInterface rowMeta;
-    data.outputRowMeta = new MultiMergeRowMeta(meta.isDuplicateFieldsAllowed());
+    data.outputRowMeta = new MultiMergeRowMeta(meta.isDuplicateFieldsNotAllowed());
     for ( int i = 0, j = 0; i < inputStepNames.length; i++ ) {
       inputStepName = inputStepNames[i];
       if ( !inputStepNameList.contains( inputStepName ) ) {
