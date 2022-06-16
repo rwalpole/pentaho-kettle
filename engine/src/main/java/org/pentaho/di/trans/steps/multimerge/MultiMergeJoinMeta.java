@@ -81,8 +81,8 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
   @Injection( name = "INPUT_STEPS" )
   private String[] inputSteps;
 
-  @Injection(name = "DUPLICATE_FIELDS_NOT_ALLOWED")
-  private boolean duplicateFieldsNotAllowed;
+  @Injection(name = "PREVENT_DUPLICATE_FIELDS")
+  private boolean preventDuplicateFields;
 
   /**
    * The supported join types are INNER, LEFT OUTER, RIGHT OUTER and FULL OUTER
@@ -123,7 +123,11 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
     return true;
   }
 
-  public boolean isDuplicateFieldsNotAllowed() { return duplicateFieldsNotAllowed; }
+  public boolean isPreventDuplicateFields() { return preventDuplicateFields; }
+
+  public void setPreventDuplicateFields(boolean preventDuplicateFields) {
+    this.preventDuplicateFields = preventDuplicateFields;
+  }
 
   public MultiMergeJoinMeta() {
     super(); // allocate BaseStepMeta
@@ -147,7 +151,7 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
     retval.allocateInputSteps( nrSteps );
     System.arraycopy( keyFields, 0, retval.keyFields, 0, nrKeys );
     System.arraycopy( inputSteps, 0, retval.inputSteps, 0, nrSteps );
-    retval.duplicateFieldsNotAllowed = duplicateFieldsNotAllowed;
+    retval.preventDuplicateFields = preventDuplicateFields;
     return retval;
   }
 
@@ -157,7 +161,7 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
 
     String[] inputStepsNames  = inputSteps != null ? inputSteps : ArrayUtils.EMPTY_STRING_ARRAY;
     retval.append( "    " ).append( XMLHandler.addTagValue( "join_type", getJoinType() ) );
-    retval.append( "    " ).append( XMLHandler.addTagValue( "duplicate_fields_not_allowed", duplicateFieldsNotAllowed) );
+    retval.append( "    " ).append( XMLHandler.addTagValue( "prevent_duplicate_fields", preventDuplicateFields) );
     for ( int i = 0; i < inputStepsNames.length; i++ ) {
       retval.append( "    " ).append( XMLHandler.addTagValue( "step" + i, inputStepsNames[ i ] ) );
     }
@@ -195,7 +199,7 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
       }
 
       joinType = XMLHandler.getTagValue( stepnode, "join_type" );
-      duplicateFieldsNotAllowed = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, "duplicate_fields_not_allowed" ) );
+      preventDuplicateFields = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, "prevent_duplicate_fields" ) );
 
     } catch ( Exception e ) {
       throw new KettleXMLException( BaseMessages.getString( PKG, "MultiMergeJoinMeta.Exception.UnableToLoadStepInfo" ),
@@ -206,7 +210,7 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
   @Override
   public void setDefault() {
     joinType = join_types[0];
-    duplicateFieldsNotAllowed = false;
+    preventDuplicateFields = false;
     allocateKeys( 0 );
     allocateInputSteps( 0 );
   }
@@ -241,7 +245,7 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
       // }
 
       joinType = rep.getStepAttributeString( id_step, "join_type" );
-      duplicateFieldsNotAllowed = rep.getStepAttributeBoolean( id_step, "duplicate_fields_not_allowed" );
+      preventDuplicateFields = rep.getStepAttributeBoolean( id_step, "prevent_duplicate_fields" );
 
     } catch ( Exception e ) {
       throw new KettleException( BaseMessages.getString( PKG,
@@ -285,7 +289,7 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
 //      }
       // inputSteps[i]
       rep.saveStepAttribute( id_transformation, id_step, "join_type", getJoinType() );
-      rep.saveStepAttribute( id_transformation, id_step, "duplicate_fields_not_allowed", duplicateFieldsNotAllowed);
+      rep.saveStepAttribute( id_transformation, id_step, "prevent_duplicate_fields", preventDuplicateFields);
 
     } catch ( Exception e ) {
       throw new KettleException( BaseMessages.getString( PKG, "MultiMergeJoinMeta.Exception.UnableToSaveStepInfo" )
@@ -314,7 +318,7 @@ public class MultiMergeJoinMeta extends BaseStepMeta implements StepMetaInterfac
     // So we just merge in the info fields.
     //
     if (info != null) {
-      if(duplicateFieldsNotAllowed) {
+      if(preventDuplicateFields) {
         mergeRowMetaNoDuplicates(r, info);
       } else {
         for (int i = 0; i < info.length; i++) {
