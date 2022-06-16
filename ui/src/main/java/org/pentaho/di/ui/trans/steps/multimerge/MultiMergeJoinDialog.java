@@ -79,10 +79,10 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
   private CCombo[] wInputStepArray;
   private CCombo joinTypeCombo;
 
-  private Label wlRemoveDuplicates;
+  private Label wlPreventDuplicates;
 
-  private Button wRemoveDuplicates;
-  private FormData fdlRemoveDuplicates, fdRemoveDuplicates;
+  private Button wPreventDuplicates;
+  private FormData fdlPreventDuplicates, fdPreventDuplicates;
 
   private Text[] keyValTextBox;
 
@@ -178,7 +178,7 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
     // create widgets for Join type
     createJoinTypeWidget( lsMod );
 
-    createRemoveDuplicatesWidget();
+    createPreventDuplicatesWidget();
 
     // Some buttons
     wOK = new Button( shell, SWT.PUSH );
@@ -267,27 +267,27 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
     joinTypeCombo.setLayoutData( fdType );
   }
 
-  private void createRemoveDuplicatesWidget() {
+  private void createPreventDuplicatesWidget() {
 
-    wlRemoveDuplicates = new Label( shell, SWT.LEFT );
-    wlRemoveDuplicates.setText( BaseMessages.getString( PKG, "MultiMergeJoinDialog.RemoveDuplicates.Label" ) );
-    props.setLook( wlRemoveDuplicates );
+    wlPreventDuplicates = new Label( shell, SWT.LEFT );
+    wlPreventDuplicates.setText( BaseMessages.getString( PKG, "MultiMergeJoinDialog.PreventDuplicates.Label" ) );
+    props.setLook(wlPreventDuplicates);
 
-    fdlRemoveDuplicates = new FormData();
-    fdlRemoveDuplicates.left = new FormAttachment( 0, 0);
-    fdlRemoveDuplicates.top = new FormAttachment( joinTypeCombo, 20);
-    wlRemoveDuplicates.setLayoutData( fdlRemoveDuplicates );
+    fdlPreventDuplicates = new FormData();
+    fdlPreventDuplicates.left = new FormAttachment( 0, 0);
+    fdlPreventDuplicates.top = new FormAttachment( joinTypeCombo, 20);
+    wlPreventDuplicates.setLayoutData( fdlPreventDuplicates );
 
-    wRemoveDuplicates = new Button( shell, SWT.CHECK );
-    wRemoveDuplicates.setToolTipText( BaseMessages.getString( PKG, "MultiMergeJoinDialog.RemoveDuplicates.Tooltip" ) );
-    props.setLook( wRemoveDuplicates );
+    wPreventDuplicates = new Button( shell, SWT.CHECK );
+    wPreventDuplicates.setToolTipText( BaseMessages.getString( PKG, "MultiMergeJoinDialog.PreventDuplicates.Tooltip" ) );
+    props.setLook(wPreventDuplicates);
 
-    fdRemoveDuplicates = new FormData();
-    fdRemoveDuplicates.top = new FormAttachment( joinTypeCombo, 20 );
-    fdRemoveDuplicates.left = new FormAttachment( wlRemoveDuplicates, margin );
+    fdPreventDuplicates = new FormData();
+    fdPreventDuplicates.top = new FormAttachment( joinTypeCombo, 20 );
+    fdPreventDuplicates.left = new FormAttachment(wlPreventDuplicates, margin );
 
-    wRemoveDuplicates.setLayoutData( fdRemoveDuplicates );
-    wRemoveDuplicates.addSelectionListener( new ComponentSelectionListener( joinMeta ) );
+    wPreventDuplicates.setLayoutData( fdPreventDuplicates );
+    wPreventDuplicates.addSelectionListener( new ComponentSelectionListener( joinMeta ) );
 
   }
 
@@ -549,6 +549,7 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
         joinTypeCombo.setText( MultiMergeJoinMeta.join_types[0] );
       }
     }
+    wPreventDuplicates.setSelection(joinMeta.isPreventDuplicateFields());
     wStepname.selectAll();
     wStepname.setFocus();
   }
@@ -607,6 +608,7 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
     }
 
     meta.setJoinType( joinTypeCombo.getText() );
+    meta.setPreventDuplicateFields(wPreventDuplicates.getSelection());
   }
 
   private void ok() {
