@@ -127,20 +127,70 @@ public class RowDataUtil {
     return newObjects;
   }
 
+  public enum InputRowSelectionPolicy {
+    /**
+     * Use the field from the first matching input row.
+     */
+    USE_FIRST,
+
+    /**
+     * Use the field from the first matching input row, unless
+     * the value of the field is null, then try the next input row
+     * until we match one where the field value is non-null. NOTE: If all
+     * input rows that have matching field values are null, then
+     * ultimately the field value must be null.
+     */
+    USE_FIRST_NOT_NULL,
+
+    /**
+     * Use the field from the last matching input row.
+     */
+    USE_LAST,
+
+    /**
+     * Use the field from the last matching input row, unless
+     * the value of the field is null, then try the previous input row
+     * until we match one where the field value is non-null. NOTE: If all
+     * input rows that have matching field values are null, then
+     * ultimately the field value must be null.
+     */
+    USE_LAST_NOT_NULL;
+
+    /**
+     * Does this policy iterate forward through the input rows?
+     *
+     * @return true if the policy should iterate forward, false if it iterates backward.
+     */
+    public boolean iterateForward() {
+      return this == USE_FIRST || this == USE_FIRST_NOT_NULL;
+    }
+
+    /**
+     * Does this policy avoid null values?
+     *
+     * @return true if null values should be avoided.
+     */
+    public boolean avoidNull() {
+      return this == USE_FIRST_NOT_NULL || this == USE_LAST_NOT_NULL;
+    }
+  }
+
   /**
    * Copies only the fields from the input rows that are required in the output row.
    *
    * If there is more than one input row with a field of the same name, that is required
-   * in the output row, then the named field from the first matching input row is used.
+   * in the output row, then input row is selected according to the {@link InputRowSelectionPolicy}.
    *
    * @param inputRows the input rows.
    * @param inputRowMetas the metas for each input row.
+   * @param inputRowSelectionPolicy the policy to use in selecting an input row when there is more than one
+   *                                input row containing the same named field that is required in the output row.
    * @param outputRowMetaList the details of the fields required in the output row.
    *
    * @return the output row.
    */
   public static Object[] createCustomResizedCopy(final Object[][] inputRows, final RowMetaInterface[] inputRowMetas,
-      final List<ValueMetaInterface> outputRowMetaList) {
+      final InputRowSelectionPolicy inputRowSelectionPolicy, final List<ValueMetaInterface> outputRowMetaList) {
 
     final Object[] outputRow = allocateRowData(outputRowMetaList.size());
 
@@ -152,19 +202,34 @@ public class RowDataUtil {
       Object inputRowFieldValue = null;
       int idxInputRowField = -1;
 
-      // TODO(AR): the below loop matches the named field from the first input row,
-      //  if the named field from the last input row is desired instead then the order of iteration could be reversed;
-      //  this could be made configurable
+      // dependent on the InputRowSelectionPolicy set parameters for the below loop
+      // so that the loop iterates either forward or backward through the input rows
+      int idxInputRow;
+      final int step;
+      final int end;
+      if (inputRowSelectionPolicy.iterateForward()) {
+        idxInputRow = 0;
+        step = 1;
+        end = inputRowMetas.length;
+      } else {
+        idxInputRow = inputRowMetas.length - 1;
+        step = -1;
+        end = -1;
+      }
 
       // find a corresponding field in one of the input rows
-      for (int idxInputRow = 0; idxInputRow < inputRowMetas.length; idxInputRow++) {
+      for (; idxInputRow != end; idxInputRow += step) {
         final RowMetaInterface inputRowMeta = inputRowMetas[idxInputRow];
         idxInputRowField = inputRowMeta.indexOfValue(outputFieldName);
         if (idxInputRowField > -1) {
 
           // get the value of the input row field
           inputRowFieldValue = inputRows[idxInputRow][idxInputRowField];
-          break; // exit the inner loop
+
+          // avoid null values if the InputRowSelectionPolicy requests it
+          if (!(inputRowSelectionPolicy.avoidNull() && inputRowFieldValue == null)) {
+            break; // exit the inner loop
+          }
         }
       }
 
