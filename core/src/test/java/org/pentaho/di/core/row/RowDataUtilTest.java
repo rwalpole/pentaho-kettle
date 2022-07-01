@@ -164,7 +164,10 @@ public class RowDataUtilTest extends TestCase {
   }
 
   public void testCreateCustomResizedCopy() {
-    final Object[][] objects = {{1, "Enrique", "test 1"},{1,"Enrique","test 2"}} ;
+    final Object[][] objects = {
+            {1, "Enrique", "test 1"},
+            {1," Enrique", "test 2"}
+    };
 
     final RowMetaInterface row1Meta = new RowMeta();
     row1Meta.addValueMeta(new ValueMetaInteger("id"));
@@ -184,15 +187,18 @@ public class RowDataUtilTest extends TestCase {
     outputMetaList.add(new ValueMetaString("test_1"));
     outputMetaList.add(new ValueMetaString("test_2"));
 
-    final Object[] result = RowDataUtil.createCustomResizedCopy(objects, outputMetaList, inputRowMetas);
-    assertEquals( 1, result[0] );
-    assertEquals( "Enrique", result[1] );
-    assertEquals( "test 1", result[2] );
-    assertEquals( "test 2", result[3] );
+    final Object[] result = RowDataUtil.createCustomResizedCopy(objects, inputRowMetas, outputMetaList);
+    assertEquals(1, result[0]);
+    assertEquals("Enrique", result[1]);
+    assertEquals("test 1", result[2]);
+    assertEquals("test 2", result[3]);
   }
 
   public void testCreateCustomResizedCopyWithDifferentColumnCount() {
-    final Object[][] objects = {{1, "Enrique", "test 1"},{1,"Enrique", "Smith", "test 2"}} ;
+    final Object[][] objects = {
+            {1, "Enrique", "test 1"},
+            {1, "Enrique", "Smith", "test 2"}
+    } ;
 
     final RowMetaInterface row1Meta = new RowMeta();
     row1Meta.addValueMeta(new ValueMetaInteger("id"));
@@ -214,16 +220,19 @@ public class RowDataUtilTest extends TestCase {
     outputMetaList.add(new ValueMetaString("test_1"));
     outputMetaList.add(new ValueMetaString("test_2"));
 
-    final Object[] result = RowDataUtil.createCustomResizedCopy(objects, outputMetaList, inputRowMetas);
-    assertEquals( 1, result[0] );
-    assertEquals( "Enrique", result[1] );
-    assertEquals( "Smith", result[2] );
-    assertEquals( "test 1", result[3] );
-    assertEquals( "test 2", result[4] );
+    final Object[] result = RowDataUtil.createCustomResizedCopy(objects, inputRowMetas, outputMetaList);
+    assertEquals(1, result[0]);
+    assertEquals("Enrique", result[1]);
+    assertEquals("Smith", result[2]);
+    assertEquals("test 1", result[3]);
+    assertEquals("test 2", result[4]);
   }
 
   public void testCreateCustomResizedCopyWithDifferentColumnValue() {
-    final Object[][] objects = {{1, "Enrique", "test 1"},{1,"Jaishree", "test 2"}} ;
+    final Object[][] objects = {
+            {1, "Enrique", "test 1"},
+            {1, "Jaishree", "test 2"}
+    };
 
     final RowMetaInterface row1Meta = new RowMeta();
     row1Meta.addValueMeta(new ValueMetaInteger("id"));
@@ -243,15 +252,18 @@ public class RowDataUtilTest extends TestCase {
     outputMetaList.add(new ValueMetaString("test_1"));
     outputMetaList.add(new ValueMetaString("test_2"));
 
-    final Object[] result = RowDataUtil.createCustomResizedCopy(objects, outputMetaList, inputRowMetas);
-    assertEquals( 1, result[0] );
-    assertEquals( "Jaishree", result[1] );
-    assertEquals( "test 1", result[2] );
-    assertEquals( "test 2", result[3] );
+    final Object[] result = RowDataUtil.createCustomResizedCopy(objects, inputRowMetas, outputMetaList);
+    assertEquals(1, result[0]);
+    assertEquals("Enrique", result[1]);
+    assertEquals("test 1", result[2]);
+    assertEquals("test 2", result[3]);
   }
 
   public void testCreateCustomResizedCopyWithEmptyRow() {
-    final Object[][] objects = {{null,null,null},{1,"Jaishree", "test 2"}} ;
+    final Object[][] objects = {
+            {null, null, null},
+            {1, "Jaishree", "test 2"}
+    };
 
     final RowMetaInterface row1Meta = new RowMeta();
     row1Meta.addValueMeta(new ValueMetaInteger("id"));
@@ -271,11 +283,11 @@ public class RowDataUtilTest extends TestCase {
     outputMetaList.add(new ValueMetaString("test_1"));
     outputMetaList.add(new ValueMetaString("test_2"));
 
-    final Object[] result = RowDataUtil.createCustomResizedCopy(objects, outputMetaList, inputRowMetas);
-    assertEquals( 1, result[0] );
-    assertEquals( "Jaishree", result[1] );
-    assertEquals( null, result[2] );
-    assertEquals( "test 2", result[3] );
+    final Object[] result = RowDataUtil.createCustomResizedCopy(objects, inputRowMetas, outputMetaList);
+    assertEquals(null, result[0]);
+    assertEquals(null, result[1]);
+    assertEquals(null, result[2]);
+    assertEquals("test 2", result[3]);
   }
 
 }

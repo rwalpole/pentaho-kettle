@@ -22,10 +22,7 @@
 
 package org.pentaho.di.core.row;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This class of static methods can be used to manipulate rows: add, delete, resize, etc... That way, when we want to go
@@ -130,31 +127,57 @@ public class RowDataUtil {
     return newObjects;
   }
 
-  // TODO(RW) - should we be throwing an exception if the values in the columns being merged are different?
-  //  Currently as we merge we just overwrite the value provided it is not null
-  public static Object[] createCustomResizedCopy(Object[][] objects, List<ValueMetaInterface> outputMetaList, RowMetaInterface[] inputRowMetas) {
-    Object[] newObjects = allocateRowData( outputMetaList.size() );
-    Map<String,Integer> valueMetaMap = getValueMetaMap(outputMetaList);
-    for(int i =0; i < inputRowMetas.length; i++) {
-      int counter = 0;
-      for(ValueMetaInterface vmi : inputRowMetas[i].getValueMetaList()) {
-        String columnName = vmi.getName();
-        Integer outputIndex = valueMetaMap.get(columnName);
-        if(objects[i][counter] != null) {
-          newObjects[outputIndex] = objects[i][counter];
-        }
-        counter++;
-      }
-    }
-    return newObjects;
-  }
+  /**
+   * Copies only the fields from the input rows that are required in the output row.
+   *
+   * If there is more than one input row with a field of the same name, that is required
+   * in the output row, then the named field from the first matching input row is used.
+   *
+   * @param inputRows the input rows.
+   * @param inputRowMetas the metas for each input row.
+   * @param outputRowMetaList the details of the fields required in the output row.
+   *
+   * @return the output row.
+   */
+  public static Object[] createCustomResizedCopy(final Object[][] inputRows, final RowMetaInterface[] inputRowMetas,
+      final List<ValueMetaInterface> outputRowMetaList) {
 
-  private static Map<String,Integer> getValueMetaMap(List<ValueMetaInterface> vmiList) {
-    Map<String,Integer> valueMap = new HashMap<String,Integer>();
-    for(ValueMetaInterface vmi: vmiList) {
-      valueMap.put(vmi.getName(),vmiList.indexOf(vmi));
+    final Object[] outputRow = allocateRowData(outputRowMetaList.size());
+
+    // iterate over all the required output row fields
+    for (int idxOutputRowField = 0; idxOutputRowField < outputRowMetaList.size(); idxOutputRowField++) {
+      final ValueMetaInterface outputFieldMeta = outputRowMetaList.get(idxOutputRowField);
+      final String outputFieldName = outputFieldMeta.getName();
+
+      Object inputRowFieldValue = null;
+      int idxInputRowField = -1;
+
+      // TODO(AR): the below loop matches the named field from the first input row,
+      //  if the named field from the last input row is desired instead then the order of iteration could be reversed;
+      //  this could be made configurable
+
+      // find a corresponding field in one of the input rows
+      for (int idxInputRow = 0; idxInputRow < inputRowMetas.length; idxInputRow++) {
+        final RowMetaInterface inputRowMeta = inputRowMetas[idxInputRow];
+        idxInputRowField = inputRowMeta.indexOfValue(outputFieldName);
+        if (idxInputRowField > -1) {
+
+          // get the value of the input row field
+          inputRowFieldValue = inputRows[idxInputRow][idxInputRowField];
+          break; // exit the inner loop
+        }
+      }
+
+      if (idxInputRowField == -1) {
+        // TODO(AR): error: could not find required output row field in any of the inputRows, should be reported?
+        //  likely an impossible case if the output row meta was setup correctly
+      }
+
+      // set the output row field value to that of the found input row field value
+      outputRow[idxOutputRowField] = inputRowFieldValue;
     }
-    return valueMap;
+
+    return outputRow;
   }
 
   /**

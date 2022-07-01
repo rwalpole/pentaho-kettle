@@ -263,7 +263,7 @@ public class MultiMergeJoin extends BaseStep implements StepInterface {
           data.rows[i] = data.results.get( i ).get( data.drainIndices[i] );
         }
         if(meta.isPreventDuplicateFields()){
-          row = RowDataUtil.createCustomResizedCopy( data.rows, data.outputRowMeta.getValueMetaList(), data.metas );
+          row = RowDataUtil.createCustomResizedCopy( data.rows, data.metas, data.outputRowMeta.getValueMetaList());
         } else {
           row = RowDataUtil.createResizedCopy( data.rows, data.rowLengths );
         }
